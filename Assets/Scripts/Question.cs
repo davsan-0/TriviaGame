@@ -2,19 +2,41 @@
 using System.Collections.Generic;
 using System;
 using UnityEngine;
+using Amazon.DynamoDBv2.DataModel;
+using Amazon.DynamoDBv2.DocumentModel;
+using Amazon.DynamoDBv2;
 
 namespace TriviaGame
 {
+    public enum Category { All }
+
+    [DynamoDBTable("TriviaGame")]
     public class Question : IQuestion
     {
+        /*[DynamoDBHashKey]
+        private QuestionID id;
+        [DynamoDBProperty]
         private string questionText;
-        private List<Answer> answerList;
+        [DynamoDBProperty]
+        private List<Answer> answerList;*/
+
+        [DynamoDBHashKey("QuestionID", typeof(QuestionIDConverter))]
+        public QuestionID Id { get; set; }
+        [DynamoDBProperty]
+        public Category Category { get; set; }
+        [DynamoDBProperty]
+        public string QuestionText { get; set; }
+        [DynamoDBProperty(typeof(AnswerConverter))]
+        public List<Answer> AnswerList { get; set; }
+
+        // 0 parameter constructor required for DynamoDB
+        public Question() { }
 
         public Question(string questionText)
         {
-            this.questionText = questionText;
+            this.QuestionText = questionText;
 
-            answerList = new List<Answer>();
+            AnswerList = new List<Answer>();
         }
 
         public void AddAnswer(params string[] answerPermutations)
@@ -22,25 +44,25 @@ namespace TriviaGame
             List<string> lst = new List<string>(answerPermutations);
 
             Answer answerEntry = new Answer(lst);
-
-            answerList.Add(answerEntry);
+            
+            AnswerList.Add(answerEntry);
         }
 
         public void AddAnswer(List<string> answerPermutations)
         {
             Answer answerEntry = new Answer(answerPermutations);
 
-            answerList.Add(answerEntry);
+            AnswerList.Add(answerEntry);
         }
 
         public string GetQuestionText()
         {
-            return questionText;
+            return QuestionText;
         }
 
         public string CheckAnswer(string answer)
         {
-            foreach (Answer answerEntry in answerList)
+            foreach (Answer answerEntry in AnswerList)
             {
                 string checkedAnswer = answerEntry.CheckAnswer(answer);
 
@@ -55,27 +77,28 @@ namespace TriviaGame
 
         public int TotalAnswersRemaining()
         {
-            return answerList.Count;
+            return AnswerList.Count;
         }
 
         public void RemoveAnswer(string toRemove)
         {
-            foreach (Answer answerEntry in answerList)
+            foreach (Answer answerEntry in AnswerList)
             {
                 string checkedAnswer = answerEntry.CheckAnswer(toRemove);
 
                 if (checkedAnswer != null)
                 {
-                    answerList.Remove(answerEntry);
+                    AnswerList.Remove(answerEntry);
                     return;
                 }
             }
         }
 
         // Represents one correct answer, but which can have many different correct inputs, i.e "Barack Obama" and "Obama" both being correct
-        private class Answer
+        public class Answer : IEnumerable
         {
-            private List<string> answerPermutations;
+            [DynamoDBProperty]
+            public List<string> answerPermutations;
 
             public Answer(string answer)
             {
@@ -101,6 +124,64 @@ namespace TriviaGame
 
                 return null;
             }
+
+            public IEnumerator GetEnumerator()
+            {
+                return answerPermutations.GetEnumerator();
+            }
         }
+
+        public class AnswerConverter : IPropertyConverter
+        {
+            public object FromEntry(DynamoDBEntry entry)
+            {
+                List<Answer> answerList = new List<Answer>();
+
+                Primitive primitive = entry as Primitive;
+
+                if (primitive == null || !(primitive.Value is String) || string.IsNullOrEmpty((string)primitive.Value))
+                    throw new ArgumentOutOfRangeException();
+
+                string[] answerGroup = ((string)(primitive.Value)).Split(new string[] { "|" }, StringSplitOptions.None);
+
+                foreach (string answer in answerGroup)
+                {
+                    string[] allPermutations = ((string)(answer)).Split(new string[] { ";" }, StringSplitOptions.None);
+                    Answer finishedAnswer = new Answer(new List<string>(allPermutations));
+                    answerList.Add(finishedAnswer);
+                }
+
+                
+                return answerList;
+            }
+
+            public DynamoDBEntry ToEntry(object value)
+            {
+                List<Answer> answerList = value as List<Answer>;
+                if (answerList == null) throw new ArgumentOutOfRangeException();
+
+                string data = "";
+
+                foreach (Answer answer in answerList)
+                {
+                    foreach (string answerPermutation in answer)
+                    {
+                        data += answerPermutation + ";";
+                    }
+                    data = data.Remove(data.Length - 1);
+                    data += "|";
+                }
+                if (data.Length > 0)
+                    data = data.Remove(data.Length - 1);
+
+                DynamoDBEntry entry = new Primitive
+                {
+                    Value = data
+                };
+                return entry;
+            }
+        }
+        
     }
+    
 }
