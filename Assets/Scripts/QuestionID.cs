@@ -27,22 +27,4 @@ namespace TriviaGame
             this.id = id;
         }
     }
-
-    public class QuestionIDConverter : IPropertyConverter
-    {
-        public DynamoDBEntry ToEntry(object value)
-        {
-            DynamoDBEntry entry = new Primitive
-            {
-                Value = value.ToString()
-            };
-
-            return entry;
-        }
-
-        public object FromEntry(DynamoDBEntry entry)
-        {
-            return entry.AsString();
-        }
-    }
 }

@@ -8,7 +8,15 @@ using Amazon.DynamoDBv2;
 
 namespace TriviaGame
 {
-    public enum Category { All }
+    public enum Category
+    {
+        Science_and_Nature,
+        Entertainment,
+        Geography,
+        History,
+        Arts_and_Literature,
+        Sports_and_Leisure
+    }
 
     [DynamoDBTable("TriviaGame")]
     public class Question : IQuestion
@@ -37,6 +45,7 @@ namespace TriviaGame
             this.QuestionText = questionText;
 
             AnswerList = new List<Answer>();
+            //Category = new HashSet<Category>();
         }
 
         public void AddAnswer(params string[] answerPermutations)
@@ -93,95 +102,6 @@ namespace TriviaGame
                 }
             }
         }
-
-        // Represents one correct answer, but which can have many different correct inputs, i.e "Barack Obama" and "Obama" both being correct
-        public class Answer : IEnumerable
-        {
-            [DynamoDBProperty]
-            public List<string> answerPermutations;
-
-            public Answer(string answer)
-            {
-                this.answerPermutations = new List<string>();
-
-                answerPermutations.Add(answer);
-            }
-
-            public Answer(List<string> answerPermutations)
-            {
-                this.answerPermutations = answerPermutations;
-            }
-
-            // Returns answer if correct, null otherwise
-            public string CheckAnswer(string answer)
-            {
-                bool answerExists = answerPermutations.Exists(s => s.Equals(answer, StringComparison.OrdinalIgnoreCase));
-
-                if (answerExists)
-                {
-                    return answerPermutations[0];
-                }
-
-                return null;
-            }
-
-            public IEnumerator GetEnumerator()
-            {
-                return answerPermutations.GetEnumerator();
-            }
-        }
-
-        public class AnswerConverter : IPropertyConverter
-        {
-            public object FromEntry(DynamoDBEntry entry)
-            {
-                List<Answer> answerList = new List<Answer>();
-
-                Primitive primitive = entry as Primitive;
-
-                if (primitive == null || !(primitive.Value is String) || string.IsNullOrEmpty((string)primitive.Value))
-                    throw new ArgumentOutOfRangeException();
-
-                string[] answerGroup = ((string)(primitive.Value)).Split(new string[] { "|" }, StringSplitOptions.None);
-
-                foreach (string answer in answerGroup)
-                {
-                    string[] allPermutations = ((string)(answer)).Split(new string[] { ";" }, StringSplitOptions.None);
-                    Answer finishedAnswer = new Answer(new List<string>(allPermutations));
-                    answerList.Add(finishedAnswer);
-                }
-
-                
-                return answerList;
-            }
-
-            public DynamoDBEntry ToEntry(object value)
-            {
-                List<Answer> answerList = value as List<Answer>;
-                if (answerList == null) throw new ArgumentOutOfRangeException();
-
-                string data = "";
-
-                foreach (Answer answer in answerList)
-                {
-                    foreach (string answerPermutation in answer)
-                    {
-                        data += answerPermutation + ";";
-                    }
-                    data = data.Remove(data.Length - 1);
-                    data += "|";
-                }
-                if (data.Length > 0)
-                    data = data.Remove(data.Length - 1);
-
-                DynamoDBEntry entry = new Primitive
-                {
-                    Value = data
-                };
-                return entry;
-            }
-        }
-        
     }
     
 }

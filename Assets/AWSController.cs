@@ -69,11 +69,11 @@ namespace TriviaGame
         {
             UnityInitializer.AttachToGameObject(this.gameObject);
             AWSConfigs.HttpClient = AWSConfigs.HttpClientOption.UnityWebRequest;
-
+            /*
             Question q = new Question("Name a United States President");
             q.Id = new QuestionID("prez");
             //q.Id = "prez";
-            q.Category = Category.All;
+            q.Category = Category.History;
             q.AddAnswer("Donald Trump", "Trump");
             q.AddAnswer("Barack Obama", "Obama");
             q.AddAnswer("Gerald Ford", "Ford", "Ford Motors??", "Salle", "Rille");
@@ -90,7 +90,7 @@ namespace TriviaGame
                 {
                     Debug.Log("Error: " + result.Exception.Message);
                 }
-            });
+            });*/
             /*Book myBook = new Book
             {
                 Id = 1001,
