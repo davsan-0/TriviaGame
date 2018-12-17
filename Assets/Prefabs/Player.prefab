@@ -94,7 +94,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bef35fdad73eb3b40be6248b4fe95905, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerName: asd
+  playerName: temp
   color: {r: 1, g: 0, b: 0, a: 1}
   activePlayerImage: {fileID: 1263936787885054}
 --- !u!114 &114765528925351948

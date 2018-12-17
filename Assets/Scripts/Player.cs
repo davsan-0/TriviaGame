@@ -56,4 +56,12 @@ public class Player : NetworkBehaviour
     {
         
     }
+
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+        
+        SetPlayerName(playerName);
+        ApplyPlayerColor(color);
+    }
 }

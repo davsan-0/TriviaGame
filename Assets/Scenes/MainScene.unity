@@ -297,11 +297,11 @@ RectTransform:
   m_Father: {fileID: 773648694}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 100, y: 100}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0.22289582, y: 1}
+  m_AnchorMax: {x: 0.7832083, y: 1}
+  m_AnchoredPosition: {x: -5.5, y: 0}
+  m_SizeDelta: {x: 843, y: 1080}
+  m_Pivot: {x: 0.5, y: 1}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -409,10 +409,10 @@ RectTransform:
   m_Father: {fileID: 813753441}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -0.5, y: -14.699951}
-  m_SizeDelta: {x: -1, y: -256.2}
+  m_AnchorMin: {x: 0, y: 0.105000004}
+  m_AnchorMax: {x: 1, y: 0.7751852}
+  m_AnchoredPosition: {x: -0.5, y: -1.3999634}
+  m_SizeDelta: {x: -1, y: -1.7000122}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &576772301
 MonoBehaviour:
@@ -457,6 +457,7 @@ GameObject:
   m_Component:
   - component: {fileID: 764921155}
   - component: {fileID: 764921154}
+  - component: {fileID: 764921156}
   m_Layer: 0
   m_Name: GameController
   m_TagString: Untagged
@@ -493,6 +494,38 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &764921156
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 764921153}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SceneId:
+    m_Value: 0
+  m_AssetId:
+    i0: 0
+    i1: 0
+    i2: 0
+    i3: 0
+    i4: 0
+    i5: 0
+    i6: 0
+    i7: 0
+    i8: 0
+    i9: 0
+    i10: 0
+    i11: 0
+    i12: 0
+    i13: 0
+    i14: 0
+    i15: 0
+  m_ServerOnly: 0
+  m_LocalPlayerAuthority: 0
 --- !u!1 &773648690
 GameObject:
   m_ObjectHideFlags: 0
@@ -1096,11 +1129,11 @@ RectTransform:
   m_Father: {fileID: 472251019}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0.15664198}
-  m_AnchorMax: {x: 1, y: 0.75129634}
-  m_AnchoredPosition: {x: 0, y: 182.4}
-  m_SizeDelta: {x: 1340, y: 396.1}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0.5, y: 1}
+  m_AnchorMax: {x: 0.5, y: 1}
+  m_AnchoredPosition: {x: 7.2, y: -54.9}
+  m_SizeDelta: {x: 704.2, y: 1025.1}
+  m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &1642887636
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1205,7 +1238,7 @@ MonoBehaviour:
   m_firstVisibleCharacter: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 190.37009, y: 0, z: 170.78342, w: 0}
+  m_margin: {x: 55.822723, y: 0, z: 48.03415, w: 0}
   m_textInfo:
     textComponent: {fileID: 1642887637}
     characterCount: 111
@@ -1213,7 +1246,7 @@ MonoBehaviour:
     spaceCount: 17
     wordCount: 17
     linkCount: 0
-    lineCount: 2
+    lineCount: 4
     pageCount: 1
     materialCount: 1
   m_havePropertiesChanged: 0
@@ -1813,10 +1846,10 @@ MonoBehaviour:
     spaceCount: 35
     wordCount: 36
     linkCount: 0
-    lineCount: 5
+    lineCount: 4
     pageCount: 1
     materialCount: 1
-  m_havePropertiesChanged: 1
+  m_havePropertiesChanged: 0
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_spriteAnimator: {fileID: 0}

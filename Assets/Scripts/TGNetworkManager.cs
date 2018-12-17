@@ -8,7 +8,7 @@ public class TGNetworkManager : NetworkManager
     public Transform playersTextArea;
 
     private int playerIncrement = 0;
-    private Color[] playerColors = new Color[] { Color.red, Color.yellow, Color.cyan, Color.magenta };
+    private Color[] playerColors = new Color[] { Color.red, Color.yellow, Color.cyan, Color.magenta, Color.white };
 
     private void Start()
     {

@@ -10,14 +10,17 @@ namespace TriviaGame
 {
     public class QuestionID : IComparable
     {
-        public string id;
+        private string id;
 
         public int CompareTo(object obj)
         {
             return this.id.CompareTo(obj.ToString());
         }
 
-        
+        public override string ToString()
+        {
+            return id;
+        }
 
         // 0 parameter constructor required for DynamoDB
         public QuestionID() { }
