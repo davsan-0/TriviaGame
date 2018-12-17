@@ -10,6 +10,8 @@ namespace TriviaGame
     {
         public TextMeshProUGUI questionText;
         public TMP_InputField inputBox;
+        public GameObject answerPrefab;
+        public Transform answersBox;
 
         private IQuestion currentQuestion;
 
@@ -34,6 +36,11 @@ namespace TriviaGame
         public void SetCurrentQuestion(IQuestion question)
         {
             currentQuestion = question;
+
+            for (int i = 0; i < currentQuestion.TotalAnswersRemaining(); i++)
+            {
+                Instantiate(answerPrefab, answersBox);
+            }
 
             questionText.text = currentQuestion.GetQuestionText();
         }

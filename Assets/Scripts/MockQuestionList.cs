@@ -17,7 +17,8 @@ namespace TriviaGame
             q = new Question("Name Presidents of the United States");
             q.Id = new QuestionID(Uuid());
             q.AddAnswer("George Washington", "Washington");
-            q.AddAnswer("John Adams", "Adams");
+            q.AddAnswer("John Adams", "Adams");  
+            q.AddAnswer("Thomas Jefferson", "Jefferson");
             q.AddAnswer("James Madison", "Madison");
             q.AddAnswer("James Monroe", "Monroe");
             q.AddAnswer("John Quincy Adams", "Jon Quincy Adams", "Quincy Adams");
