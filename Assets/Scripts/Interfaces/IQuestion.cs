@@ -13,7 +13,7 @@ namespace TriviaGame
         string CheckAnswer(string answer);
 
         // Returns how many answers that remain
-        int TotalAnswersRemaining();
+        int AnswersRemainingCount();
 
         // Removes the answer from the list of remaining answers
         void RemoveAnswer(string toRemove);

@@ -14,10 +14,12 @@ namespace TriviaGame
         public TMP_InputField inputBox;
         public GameObject answerPrefab;
         public Transform answersBox;
+        public AudioSource correctAnswerAudio;
 
-        private IQuestion currentQuestion;
-        [SyncVar]
-        private string questionAsString; // Used for syncing over Network
+        private Question currentQuestion;
+
+        [SyncVar(hook = "SetCurrentQuestionFromString")]
+        public string questionAsString;
 
         private List<UIAnswer> uiAnswerRef;
 
@@ -25,55 +27,77 @@ namespace TriviaGame
         private MockQuestionList qList;
 
         // Use this for initialization
+        void Awake()
+        {
+            uiAnswerRef = new List<UIAnswer>();
+        }
+
         void Start()
         {
-            qList = new MockQuestionList();
-            var q = qList.GetQuestion();
-
-            uiAnswerRef = new List<UIAnswer>();
-
-            var q2 = JsonToQuestion(QuestionToJson(q));
-            SetCurrentQuestion(q2);
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-           
-        }
-
-        public void SetCurrentQuestion(IQuestion question)
-        {
-            currentQuestion = question;
-
-            for (int i = 0; i < currentQuestion.TotalAnswersRemaining(); i++)
+            if (isServer)
             {
-                var go = (GameObject)Instantiate(answerPrefab, answersBox);
-                uiAnswerRef.Add(go.GetComponent<UIAnswer>()); // Add reference to the created ui object
+                qList = new MockQuestionList();
+                var q = qList.GetQuestion();
+                SetCurrentQuestion(q);
+            }
+        }
+
+        void SetCurrentQuestionFromString(string question)
+        {
+            if (!isServer)
+            {
+                SetCurrentQuestion(JsonToQuestion(question));
             }
 
-            questionText.text = currentQuestion.GetQuestionText();
+            this.questionAsString = question;
         }
 
-        public void InputFieldValueChanged(string value)
+        public void SetCurrentQuestion(Question question)
+        {
+            if (currentQuestion == null || currentQuestion.Id != question.Id)
+            {
+                currentQuestion = question;
+
+                for (int i = 0; i < currentQuestion.TotalAnswersCount(); i++)
+                {
+                    var go = (GameObject)Instantiate(answerPrefab, answersBox);
+                    uiAnswerRef.Add(go.GetComponent<UIAnswer>()); // Add reference to the created ui object
+                }
+
+                foreach (string answer in question.EnteredAnswersList)
+                {
+                    RevealAnswer(answer);
+                }
+
+                questionText.text = currentQuestion.GetQuestionText();
+            }
+
+            // Update the SyncVar for clients
+            if (isServer)
+            {
+                Debug.Log("Server");
+                questionAsString = QuestionToJson(question);
+            }
+        }
+
+        public bool CheckAnswer(string answer)
         {
             if (currentQuestion == null)
             {
                 Debug.Log("ERROR: currentQuestion is Null");
-                return;
+                return false;
             }
 
-            string answer = currentQuestion.CheckAnswer(value);
+            string correctAnswer = currentQuestion.CheckAnswer(answer);
 
-            if (answer != null && uiAnswerRef.Count > 0)
+            if (correctAnswer != null && uiAnswerRef.Count > 0)
             {
-                RpcRevealAnswer(answer);
-                inputBox.text = ""; // Clear input after correct answer
+                return true;
             }
+            return false;
         }
 
-        [ClientRpc]
-        public void RpcRevealAnswer(string answer)
+        public void RevealAnswer(string answer)
         {
             Debug.Log("Correct answer: " + answer);
             uiAnswerRef[0].RevealAnswer(answer);
@@ -82,6 +106,32 @@ namespace TriviaGame
             currentQuestion.RemoveAnswer(answer);
         }
 
+        [ClientRpc]
+        public void RpcRevealAnswer(string answer)
+        {
+            string correctAnswer = currentQuestion.CheckAnswer(answer);
+            if (correctAnswer == null) return;
+
+            Debug.Log("Correct answer: " + correctAnswer);
+
+            correctAnswerAudio.Play();
+
+            uiAnswerRef[0].RevealAnswer(correctAnswer);
+            uiAnswerRef.RemoveAt(0);
+
+            currentQuestion.RemoveAnswer(answer);
+
+            if (isServer)
+                questionAsString = QuestionToJson(currentQuestion);
+        }
+
+        public void CmdRevealAnswer(string answer)
+        {
+            RpcRevealAnswer(answer);
+        }
+
+        
+
         private string QuestionToJson(Question question)
         {
             var qStruct = new QuestionStruct();
@@ -89,6 +139,7 @@ namespace TriviaGame
             qStruct.questionText = question.QuestionText;
             qStruct.category = question.Category.ToString();
             qStruct.answerList = question.AnswersAsString();
+            qStruct.enteredAnswers = question.EnteredAnswersAsString();
 
             return JsonUtility.ToJson(qStruct);
         }
@@ -102,6 +153,7 @@ namespace TriviaGame
             question.QuestionText = qStruct.questionText;
             question.Category = (Category)Enum.Parse(typeof(Category), qStruct.category);
             question.SetAnswersFromString(qStruct.answerList);
+            question.SetEnteredAnswersFromString(qStruct.enteredAnswers);
 
             return question;
         }
@@ -113,6 +165,14 @@ namespace TriviaGame
             public string questionText;
             public string category;
             public string answerList;
+            public string enteredAnswers;
+        }
+
+        public override void OnStartClient()
+        {
+            base.OnStartClient();
+
+            SetCurrentQuestionFromString(questionAsString);
         }
     }
 }

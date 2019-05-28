@@ -4,64 +4,105 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class Player : NetworkBehaviour
+namespace TriviaGame
 {
-    [SyncVar(hook = "SetPlayerName")]
-    public string playerName;
-    [SyncVar(hook = "ApplyPlayerColor")]
-    public Color color;
-
-    public GameObject activePlayerImage;
-
-    public bool IsActivePlayer
+    public class Player : NetworkBehaviour
     {
-        get
+        [SyncVar(hook = "SetPlayerName")]
+        public string playerName;
+        [SyncVar(hook = "ApplyPlayerColor")]
+        public Color color;
+
+        [SyncVar(hook = "SetScore")]
+        public int score = 0;
+
+        public GameObject activePlayerImage;
+
+        public bool IsActivePlayer
         {
-            return isActivePlayer;
-        }
-        set
-        {
-            activePlayerImage.SetActive(value);
-            isActivePlayer = value;
-        }
-    }
-
-    private bool isActivePlayer;
-    private TextMeshProUGUI text;
-
-    private const string parentTag = "PlayerUI";
-
-    void SetPlayerName(string name)
-    {
-        text.text = name;
-    }
-
-    void ApplyPlayerColor(Color color)
-    {
-        text.color = color;
-    }
-
-    void Awake()
-    {
-        GameObject _parent = GameObject.FindGameObjectWithTag(parentTag);
-        if (transform.parent != _parent.transform)
-        {
-            transform.SetParent(_parent.transform, false);
+            get
+            {
+                return isActivePlayer;
+            }
+            set
+            {
+                activePlayerImage.SetActive(value);
+                isActivePlayer = value;
+            }
         }
 
-        text = GetComponentInChildren<TextMeshProUGUI>();
-    }
+        private bool isActivePlayer;
+        private TextMeshProUGUI text;
+        private QuestionController gameController;
+        private TMP_InputField inputField;
 
-    void Update()
-    {
-        
-    }
+        private const string parentTag = "PlayerUI";
 
-    public override void OnStartClient()
-    {
-        base.OnStartClient();
-        
-        SetPlayerName(playerName);
-        ApplyPlayerColor(color);
+        void SetPlayerName(string playerName)
+        {
+            text.text = playerName + ": 0";
+            this.playerName = playerName;
+        }
+
+        void ApplyPlayerColor(Color color)
+        {
+            text.color = color;
+            this.color = color;
+        }
+
+        void SetScore(int score)
+        {
+            text.text = playerName + ": " + score;
+            this.score = score;
+        }
+
+        void Awake()
+        {
+            GameObject _parent = GameObject.FindGameObjectWithTag(parentTag);
+            if (transform.parent != _parent.transform)
+            {
+                transform.SetParent(_parent.transform, false);
+            }
+
+            text = GetComponentInChildren<TextMeshProUGUI>();
+
+            gameController = GameObject.FindGameObjectWithTag("GameController").GetComponent<QuestionController>();
+            inputField = GameObject.FindGameObjectWithTag("MainInputField").GetComponent<TMP_InputField>();
+
+            inputField.onValueChanged.AddListener(InputFieldValueChanged);
+        }
+
+        public void InputFieldValueChanged(string value)
+        {
+            bool correct = gameController.CheckAnswer(value);
+            
+            if(correct)
+            {
+                if (isLocalPlayer)
+                    // Reveal answer for all
+                    CmdRevealAnswer(value);
+                else if (isServer)
+                    gameController.RpcRevealAnswer(value);
+
+                inputField.text = "";
+                
+            }
+        }
+
+        [Command]
+        public void CmdRevealAnswer(string answer)
+        {
+            gameController.CmdRevealAnswer(answer);
+            score++;
+        }
+
+        public override void OnStartClient()
+        {
+            base.OnStartClient();
+
+            SetPlayerName(playerName);
+            ApplyPlayerColor(color);
+            SetScore(score);
+        }
     }
 }

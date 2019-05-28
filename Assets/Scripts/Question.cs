@@ -37,6 +37,8 @@ namespace TriviaGame
         [DynamoDBProperty(typeof(AnswerConverter))]
         public List<Answer> AnswerList { get; set; }
 
+        public List<string> EnteredAnswersList { get; set; }
+
         // 0 parameter constructor required for DynamoDB
         public Question() { }
 
@@ -45,6 +47,7 @@ namespace TriviaGame
             this.QuestionText = questionText;
 
             AnswerList = new List<Answer>();
+            EnteredAnswersList = new List<string>();
             //Category = new HashSet<Category>();
         }
 
@@ -84,9 +87,19 @@ namespace TriviaGame
             return null;
         }
 
-        public int TotalAnswersRemaining()
+        public int AnswersRemainingCount()
         {
             return AnswerList.Count;
+        }
+
+        public int TotalAnswersCount()
+        {
+            return AnswerList.Count + EnteredAnswersList.Count;
+        }
+
+        public int EnteredAnswersCount()
+        {
+            return EnteredAnswersList.Count;
         }
 
         public void RemoveAnswer(string toRemove)
@@ -98,6 +111,7 @@ namespace TriviaGame
                 if (checkedAnswer != null)
                 {
                     AnswerList.Remove(answerEntry);
+                    EnteredAnswersList.Add(checkedAnswer);
                     return;
                 }
             }
@@ -136,6 +150,35 @@ namespace TriviaGame
                 Answer finishedAnswer = new Answer(new List<string>(allPermutations));
                 AnswerList.Add(finishedAnswer);
             }
+        }
+
+        public string EnteredAnswersAsString()
+        {
+            Debug.Log(EnteredAnswersList);
+            string data = "";
+
+            foreach (string answer in EnteredAnswersList)
+            {
+                data += answer + "|";
+            }
+            if (data.Length > 0)
+                data = data.Remove(data.Length - 1);
+
+            return data;
+        }
+
+        public void SetEnteredAnswersFromString(string answers)
+        {
+            if (answers == "")
+            {
+                EnteredAnswersList = new List<string>();
+                return;
+            }
+            Debug.Log("answers = " + answers);
+
+            string[] answerGroup = ((string)(answers)).Split(new string[] { "|" }, StringSplitOptions.None);
+
+            EnteredAnswersList = new List<string>(answerGroup);
         }
     }
     

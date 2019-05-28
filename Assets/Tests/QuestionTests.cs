@@ -41,7 +41,7 @@ namespace TriviaGame
         [Test]
         public void TotalAnswersRemainingTest()
         {
-            Assert.AreEqual(2, question.TotalAnswersRemaining());
+            Assert.AreEqual(2, question.AnswersRemainingCount());
         }
 
         [Test]
