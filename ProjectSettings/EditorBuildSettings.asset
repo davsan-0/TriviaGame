@@ -5,7 +5,7 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/LoginScene.unity
     guid: a68e31a36d34aa648ac8b6a4630da75f
   - enabled: 1
@@ -23,4 +23,7 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/AWSSDK/Examples/DynamoDBExample.unity
     guid: a51f15e277c4168438967d34dbb1d4c5
+  - enabled: 1
+    path: Assets/Scenes/LobbyScene.unity
+    guid: 0d4ce0490ad26e14397e2d98c1d20308
   m_configObjects: {}

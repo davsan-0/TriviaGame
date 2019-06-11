@@ -7,9 +7,10 @@ using UnityEngine;
 namespace TriviaGame
 {
     // Represents one correct answer, but which can have many different correct inputs, i.e "Barack Obama" and "Obama" both being correct
+    [Serializable]
     public class Answer : IEnumerable
     {
-        [DynamoDBProperty]
+        //[DynamoDBProperty]
         public List<string> answerPermutations;
 
         public Answer(string answer)

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 
 namespace TriviaGame
-{
+{/*
     public class TGNetworkManager : NetworkManager
     {
         public Transform playersTextArea;
@@ -25,5 +25,5 @@ namespace TriviaGame
             playerIncrement++;
             NetworkServer.AddPlayerForConnection(conn, player, playerControllerId);
         }
-    }
+    }*/
 }

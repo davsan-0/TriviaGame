@@ -14,8 +14,8 @@ namespace TriviaGame
         {
             questionList = new List<Question>();
 
-            q = new Question("Name Presidents of the United States");
-            q.Id = new QuestionID(Uuid());
+            q = new Question("Presidents of the United States");
+            q.id = Uuid();
             q.AddAnswer("George Washington", "Washington");
             q.AddAnswer("John Adams", "Adams");  
             q.AddAnswer("Thomas Jefferson", "Jefferson");
@@ -62,8 +62,8 @@ namespace TriviaGame
             q.AddAnswer("Donald Trump", "Trump");
             questionList.Add(q);
 
-            q = new Question("Name US States");
-            q.Id = new QuestionID(Uuid());
+            q = new Question("US States");
+            q.id = Uuid();
             q.AddAnswer("Alabama");
             q.AddAnswer("Alaska");
             q.AddAnswer("Arizona");
@@ -116,8 +116,8 @@ namespace TriviaGame
             q.AddAnswer("Wyoming");
             questionList.Add(q);
 
-            q = new Question("Name Countries in Europe");
-            q.Id = new QuestionID(Uuid());
+            q = new Question("Countries in Europe");
+            q.id = Uuid();
             q.AddAnswer("Albania");
             q.AddAnswer("Andorra");
             q.AddAnswer("Armenia");
@@ -169,6 +169,24 @@ namespace TriviaGame
             q.AddAnswer("Ukraine");
             q.AddAnswer("United Kingdom", "UK");
             q.AddAnswer("Vatican City", "Holy See");
+            questionList.Add(q);
+
+            q = new Question("Countries With Populations Over 100 Million (2019)");
+            q.id = Uuid();
+            q.AddAnswer("China");
+            q.AddAnswer("India");
+            q.AddAnswer("United States", "USA");
+            q.AddAnswer("Indonesia");
+            q.AddAnswer("Brazil", "Brasil");
+            q.AddAnswer("Pakistan");
+            q.AddAnswer("Nigeria");
+            q.AddAnswer("Bangladesh");
+            q.AddAnswer("Russia");
+            q.AddAnswer("Mexico");
+            q.AddAnswer("Japan");
+            q.AddAnswer("Ethiopia");
+            q.AddAnswer("Philippines");
+            q.AddAnswer("Egypt");
             questionList.Add(q);
         }
 

@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using UnityEngine.Networking;
 using System;
 
 namespace TriviaGame
 {
-    public class QuestionController : NetworkBehaviour
+    public class QuestionController : MonoBehaviour
     {
         public TextMeshProUGUI questionText;
         public TMP_InputField inputBox;
@@ -18,7 +17,7 @@ namespace TriviaGame
 
         private Question currentQuestion;
 
-        [SyncVar(hook = "SetCurrentQuestionFromString")]
+        //[SyncVar(hook = "SetCurrentQuestionFromString")]
         public string questionAsString;
 
         private List<UIAnswer> uiAnswerRef;
@@ -26,35 +25,63 @@ namespace TriviaGame
         // TEMP
         private MockQuestionList qList;
 
+        //  Singleton
+        private static QuestionController _instance;
+        public static QuestionController Instance
+        {
+            get { if (_instance == null)
+                {
+                    var go = new GameObject("QuestionController");
+                    DontDestroyOnLoad(go);
+                    var component = go.AddComponent<QuestionController>();
+                    _instance = component;
+                }
+                return _instance;
+            }
+        }
+
         // Use this for initialization
         void Awake()
         {
+            if (_instance != null && _instance != this)
+            {
+                Destroy(this);
+                throw new System.Exception("An instance of this singleton already exists.");
+            }
+            else
+            {
+                _instance = this;
+                DontDestroyOnLoad(gameObject);
+            }
+
             uiAnswerRef = new List<UIAnswer>();
         }
 
         void Start()
         {
-            if (isServer)
+            /*if (isServer)
             {
                 qList = new MockQuestionList();
                 var q = qList.GetQuestion();
                 SetCurrentQuestion(q);
-            }
+            }*/
+            qList = new MockQuestionList();
+            Debug.Log(QuestionToJson(qList.GetQuestion()));
         }
 
         void SetCurrentQuestionFromString(string question)
         {
-            if (!isServer)
+            /*if (!isServer)
             {
                 SetCurrentQuestion(JsonToQuestion(question));
             }
 
-            this.questionAsString = question;
+            this.questionAsString = question;*/
         }
 
         public void SetCurrentQuestion(Question question)
         {
-            if (currentQuestion == null || currentQuestion.Id != question.Id)
+            if (currentQuestion == null || currentQuestion.id != question.id)
             {
                 currentQuestion = question;
 
@@ -64,20 +91,21 @@ namespace TriviaGame
                     uiAnswerRef.Add(go.GetComponent<UIAnswer>()); // Add reference to the created ui object
                 }
 
-                foreach (string answer in question.EnteredAnswersList)
+                /*foreach (string answer in question.EnteredAnswersList)
                 {
                     RevealAnswer(answer);
                 }
+                */
 
                 questionText.text = currentQuestion.GetQuestionText();
             }
 
             // Update the SyncVar for clients
-            if (isServer)
+           /* if (isServer)
             {
                 Debug.Log("Server");
                 questionAsString = QuestionToJson(question);
-            }
+            }*/
         }
 
         public bool CheckAnswer(string answer)
@@ -106,7 +134,7 @@ namespace TriviaGame
             currentQuestion.RemoveAnswer(answer);
         }
 
-        [ClientRpc]
+       // [ClientRpc]
         public void RpcRevealAnswer(string answer)
         {
             string correctAnswer = currentQuestion.CheckAnswer(answer);
@@ -121,37 +149,38 @@ namespace TriviaGame
 
             currentQuestion.RemoveAnswer(answer);
 
-            if (isServer)
-                questionAsString = QuestionToJson(currentQuestion);
+            /*if (isServer)
+                questionAsString = QuestionToJson(currentQuestion);*/
         }
 
-        public void CmdRevealAnswer(string answer)
+        /*public void CmdRevealAnswer(string answer)
         {
             RpcRevealAnswer(answer);
-        }
+        }*/
 
         
 
-        private string QuestionToJson(Question question)
+        public string QuestionToJson(Question question)
         {
             var qStruct = new QuestionStruct();
-            qStruct.questionId = question.Id.ToString();
-            qStruct.questionText = question.QuestionText;
-            qStruct.category = question.Category.ToString();
+            qStruct.questionId = question.id.ToString();
+            qStruct.questionText = question.questionText;
+            qStruct.category = question.category.ToString();
             qStruct.answerList = question.AnswersAsString();
+            //qStruct.answerList = JsonUtility.ToJson(question.answerList);
             qStruct.enteredAnswers = question.EnteredAnswersAsString();
 
             return JsonUtility.ToJson(qStruct);
         }
 
-        private Question JsonToQuestion(string json)
+        public Question JsonToQuestion(string json)
         {
             var qStruct = JsonUtility.FromJson<QuestionStruct>(json);
 
             Question question = new Question();
-            question.Id = new QuestionID(qStruct.questionId);
-            question.QuestionText = qStruct.questionText;
-            question.Category = (Category)Enum.Parse(typeof(Category), qStruct.category);
+            question.id = qStruct.questionId;
+            question.questionText = qStruct.questionText;
+            question.category = (Category)Enum.Parse(typeof(Category), qStruct.category);
             question.SetAnswersFromString(qStruct.answerList);
             question.SetEnteredAnswersFromString(qStruct.enteredAnswers);
 
@@ -168,11 +197,11 @@ namespace TriviaGame
             public string enteredAnswers;
         }
 
-        public override void OnStartClient()
+        /*public override void OnStartClient()
         {
             base.OnStartClient();
 
             SetCurrentQuestionFromString(questionAsString);
-        }
+        }*/
     }
 }

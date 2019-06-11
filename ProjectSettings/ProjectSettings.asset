@@ -695,7 +695,7 @@ PlayerSettings:
   facebookStatus: 1
   facebookXfbml: 0
   facebookFrictionlessRequests: 1
-  apiCompatibilityLevel: 2
+  apiCompatibilityLevel: 6
   cloudProjectId: 5597c9a9-e7e4-4a9c-91bb-f402b75eff13
   framebufferDepthMemorylessMode: 0
   projectName: New Unity Project (1)

@@ -6,15 +6,54 @@ using UnityEngine.Networking;
 
 namespace TriviaGame
 {
-    public class Player : NetworkBehaviour
+    public class Player : MonoBehaviour
     {
-        [SyncVar(hook = "SetPlayerName")]
-        public string playerName;
-        [SyncVar(hook = "ApplyPlayerColor")]
-        public Color color;
+        private string _playerName;
+        private Color _color;
+        private int _score;
 
-        [SyncVar(hook = "SetScore")]
-        public int score = 0;
+        public string PlayerName {
+            get
+            {
+                return _playerName;
+            }
+            set
+            {
+                text.text = value + ": 0";
+                _playerName = value;
+            }
+        }
+
+        public Color PlayerColor
+        {
+            get
+            {
+                return _color;
+            }
+            set
+            {
+                text.color = value;
+                _color = value;
+            }
+        }
+
+        public int Score
+        {
+            get
+            {
+                return _score;
+            }
+            set
+            {
+                text.text = _playerName + ": " + _score;
+                _score = value;
+            }
+        }
+        //[SyncVar(hook = "ApplyPlayerColor")]
+        /*public Color color;
+
+        //[SyncVar(hook = "SetScore")]
+        public int score = 0;*/
 
         public GameObject activePlayerImage;
 
@@ -33,18 +72,18 @@ namespace TriviaGame
 
         private bool isActivePlayer;
         private TextMeshProUGUI text;
-        private QuestionController gameController;
+        private QuestionController questionController;
         private TMP_InputField inputField;
 
         private const string parentTag = "PlayerUI";
 
-        void SetPlayerName(string playerName)
+        /*public void SetPlayerName(string playerName)
         {
             text.text = playerName + ": 0";
             this.playerName = playerName;
         }
 
-        void ApplyPlayerColor(Color color)
+        public void ApplyPlayerColor(Color color)
         {
             text.color = color;
             this.color = color;
@@ -54,7 +93,7 @@ namespace TriviaGame
         {
             text.text = playerName + ": " + score;
             this.score = score;
-        }
+        }*/
 
         void Awake()
         {
@@ -66,7 +105,6 @@ namespace TriviaGame
 
             text = GetComponentInChildren<TextMeshProUGUI>();
 
-            gameController = GameObject.FindGameObjectWithTag("GameController").GetComponent<QuestionController>();
             inputField = GameObject.FindGameObjectWithTag("MainInputField").GetComponent<TMP_InputField>();
 
             inputField.onValueChanged.AddListener(InputFieldValueChanged);
@@ -74,22 +112,22 @@ namespace TriviaGame
 
         public void InputFieldValueChanged(string value)
         {
-            bool correct = gameController.CheckAnswer(value);
+            bool correct = QuestionController.Instance.CheckAnswer(value);
             
             if(correct)
             {
-                if (isLocalPlayer)
+                /*if (isLocalPlayer)
                     // Reveal answer for all
                     CmdRevealAnswer(value);
                 else if (isServer)
-                    gameController.RpcRevealAnswer(value);
+                    gameController.RpcRevealAnswer(value);*/
 
                 inputField.text = "";
                 
             }
         }
 
-        [Command]
+        /*[Command]
         public void CmdRevealAnswer(string answer)
         {
             gameController.CmdRevealAnswer(answer);
@@ -103,6 +141,6 @@ namespace TriviaGame
             SetPlayerName(playerName);
             ApplyPlayerColor(color);
             SetScore(score);
-        }
+        }*/
     }
 }

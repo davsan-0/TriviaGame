@@ -66,13 +66,11 @@ namespace TriviaGame
 
         public new static bool Equals(object obj1, object obj2)
         {
-            Debug.Log("HE");
             return true;
         }
 
         public static bool Equals(QuestionID obj1, QuestionID obj2)
         {
-            Debug.Log("HEJ");
             return true;
         }
         
