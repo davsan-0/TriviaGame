@@ -11,8 +11,9 @@ GameObject:
   - component: {fileID: 5965834194240115246}
   - component: {fileID: 4431060964283299162}
   - component: {fileID: 7444197115901639152}
+  - component: {fileID: 2888276059229858993}
   m_Layer: 5
-  m_Name: PlayerText
+  m_Name: LobbyPlayerText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -79,3 +80,16 @@ MonoBehaviour:
     m_VerticalOverflow: 0
     m_LineSpacing: 1
   m_Text: Testname1234
+--- !u!114 &2888276059229858993
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1524750769322655216}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9c5f14d3147cf44bacc11f6b59fdf67, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerText: {fileID: 7444197115901639152}

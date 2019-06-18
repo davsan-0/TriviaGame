@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace TriviaGame
@@ -10,31 +11,64 @@ namespace TriviaGame
         public GameObject playerPrefab;
         public Transform playerParent;
         public Text codeText;
+        public Button startGameButton;
+
+        private Dictionary<Player, GameObject> playersDict;
 
         // Start is called before the first frame update
         void Start()
         {
-            TcpController.Instance.PlayerJoined += Instance_PlayerJoined;
+            playersDict = new Dictionary<Player, GameObject>();
+
+
+            PlayerController.Instance.OnPlayerAdded += PlayerJoined;
+            PlayerController.Instance.OnPlayerRemoved += PlayerLeft;
+            TcpController.Instance.StartGame += () => SceneManager.LoadScene("MainScene", LoadSceneMode.Single);
 
             codeText.text = TcpController.ROOM_CODE;
 
-            foreach (string player in PlayerController.Instance.players)
+            if (TcpController.isHost)
             {
-                Instance_PlayerJoined(player);
+                startGameButton.onClick.AddListener(StartGameClicked);
+            } else
+            {
+                startGameButton.gameObject.SetActive(false);
             }
+                
         }
 
-        private void Instance_PlayerJoined(string name)
+        private void StartGameClicked()
         {
-            var go = Instantiate(playerPrefab, playerParent);
-            go.GetComponentInChildren<Text>().text = name;
-            go.transform.SetSiblingIndex(playerParent.childCount - 2);
+            RestAPICaller.Instance.GetQuestion(10, (List<Question> questions) =>
+            {
+                SceneManager.LoadScene("MainScene", LoadSceneMode.Single);
+                TcpController.Instance.SendStartGame();
+
+                QuestionController.Instance.questionList = questions;
+
+                QuestionController.Instance.SetAndBroadcastRandomQuestion();
+            });
         }
 
-        // Update is called once per frame
-        void Update()
+        private void PlayerJoined(Player player)
         {
+            GameObject go = Instantiate(playerPrefab, playerParent);
+            LobbyPlayerText lpt = go.GetComponent<LobbyPlayerText>();
 
+            lpt.ChangeName(player.Name);
+            lpt.ChangeColor(player.Color);
+
+            playersDict.Add(player, go);
+            //PlayerController.Instance.AddPlayer(name);
+        }
+
+        private void PlayerLeft(Player player)
+        {
+            GameObject go;
+            playersDict.TryGetValue(player, out go);
+            playersDict.Remove(player);
+
+            Destroy(go);
         }
     }
 }

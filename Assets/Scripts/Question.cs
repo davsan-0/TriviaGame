@@ -22,20 +22,12 @@ namespace TriviaGame
     [Serializable]
     public class Question : IQuestion
     {
-        /*[DynamoDBHashKey]
-        private QuestionID id;
-        [DynamoDBProperty]
-        private string questionText;
-        [DynamoDBProperty]
-        private List<Answer> answerList;*/
-
-        //[DynamoDBHashKey("QuestionID", typeof(QuestionIDConverter))]
         public string id { get; set; }
-        //[DynamoDBProperty]
+
         public Category category { get; set; }
-        //[DynamoDBProperty]
+
         public string questionText { get; set; }
-        //[DynamoDBProperty(typeof(AnswerConverter))]
+
         public List<Answer> answerList { get; set; }
 
         public List<string> EnteredAnswersList { get; set; }
@@ -170,16 +162,83 @@ namespace TriviaGame
 
         public void SetEnteredAnswersFromString(string answers)
         {
-            if (answers == "")
+            if (answers == "" || answers == null)
             {
                 EnteredAnswersList = new List<string>();
                 return;
             }
             Debug.Log("answers = " + answers);
 
-            string[] answerGroup = ((string)(answers)).Split(new string[] { "|" }, StringSplitOptions.None);
+            string[] answerGroup = answers.Split(new string[] { "|" }, StringSplitOptions.None);
 
             EnteredAnswersList = new List<string>(answerGroup);
+        }
+
+        public static List<Question> JsonToQuestions(string json)
+        {
+            QuestionStructList qStructs = JsonUtility.FromJson<QuestionStructList>("{\"questions\":" + json + "}");
+
+            List<Question> questions = new List<Question>();
+
+            foreach (QuestionStruct qStruct in qStructs.questions)
+            {
+                questions.Add(QuestionStructToQuestion(qStruct));
+            }
+            return questions;
+        }
+
+        public static string QuestionToJson(Question question)
+        {
+            var qStruct = new QuestionStruct();
+            qStruct.id = question.id.ToString();
+            qStruct.questionText = question.questionText;
+            qStruct.category = question.category.ToString();
+            qStruct.answerList = question.AnswersAsString();
+            //qStruct.answerList = JsonUtility.ToJson(question.answerList);
+            qStruct.enteredAnswers = question.EnteredAnswersAsString();
+
+            Debug.Log("JUTIL = " +JsonUtility.ToJson(qStruct));
+            return JsonUtility.ToJson(qStruct, false);
+        }
+
+        public static Question JsonToQuestion(string json)
+        {
+            Debug.Log(json);
+            QuestionStruct qStruct = JsonUtility.FromJson<QuestionStruct>(json);
+
+            return QuestionStructToQuestion(qStruct);
+        }
+
+        private static Question QuestionStructToQuestion(QuestionStruct qStruct)
+        {
+            Question question = new Question();
+            question.id = qStruct.id;
+            Debug.Log("id = " + qStruct.id);
+            question.questionText = qStruct.questionText;
+            Debug.Log("qT = " + qStruct.questionText);
+            question.category = (Category)Enum.Parse(typeof(Category), qStruct.category);
+            Debug.Log("cat = " + qStruct.category);
+            question.SetAnswersFromString(qStruct.answerList);
+            Debug.Log("answers = " + qStruct.answerList);
+            question.SetEnteredAnswersFromString(qStruct.enteredAnswers);
+
+            return question;
+        }
+
+        [Serializable]
+        private struct QuestionStruct
+        {
+            public string id;
+            public string questionText;
+            public string category;
+            public string answerList;
+            public string enteredAnswers;
+        }
+
+        [Serializable]
+        private struct QuestionStructList
+        {
+            public List<QuestionStruct> questions;
         }
     }
     

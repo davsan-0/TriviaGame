@@ -79,12 +79,12 @@ namespace TriviaGame
             }
         }
 
-        public void GetQuestion(int limit)
+        public void GetQuestion(int limit, Action<List<Question>> callback)
         {
             string limitStr = (limit <= 0) ? "" : "?limit=" + limit;
             StartCoroutine(GetRequest(URI + GET_QUESTION + limitStr, (string questions) =>
             {
-                Debug.Log(questions);
+                callback(Question.JsonToQuestions(questions));
             }));
         }
 
@@ -97,8 +97,9 @@ namespace TriviaGame
                 TcpController.Instance.ConnectToTcpServer(codeStruct.port);
                 TcpController.ROOM_CODE = codeStruct.code;
 
-                PlayerController.Instance.players = new List<string>();
-                PlayerController.Instance.players.Add(playerName);
+                PlayerController.Instance.players = new List<Player>();
+
+                TcpController.isHost = true;
 
                 TcpController.Instance.BroadcastJoinWithName(playerName);
                 Debug.Log(JsonUtility.ToJson(codeStruct));
