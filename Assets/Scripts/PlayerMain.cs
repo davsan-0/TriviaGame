@@ -59,26 +59,26 @@ namespace TriviaGame
 
         public void SetPlayerName(string value)
         {
-            text.text = value + ": 0";
             _playerName = value;
+            text.text = _playerName + ": 0";
         }
 
         public void SetPlayerColor(Color value)
         {
-            text.color = value;
             _color = value;
+            text.color = _color;
         }
 
         public void SetScore(int value)
         {
-            text.text = _playerName + ": " + _score;
             _score = value;
+            text.text = _playerName + ": " + _score;
         }
 
         public void SetActivePlayer(bool value)
         {
-            activePlayerImage.SetActive(value);
             isActivePlayer = value;
+            activePlayerImage.SetActive(isActivePlayer);
         }
 
         void Awake()

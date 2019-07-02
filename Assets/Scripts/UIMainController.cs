@@ -13,6 +13,11 @@ namespace TriviaGame
         public GameObject answerPrefab;
         public Transform answersBox;
         public AudioSource correctAnswerAudio;
+        public Button menuButton;
+        public Canvas mainCanvas;
+
+        [Space]
+        public GameObject modalPrefab;
 
         private List<UIAnswer> uiAnswerRef;
 
@@ -24,12 +29,29 @@ namespace TriviaGame
             QuestionController.Instance.AnswerDiscovered += RevealAnswer;
             QuestionController.Instance.QuestionSet += SetCurrentQuestion;
 
+            Player me = PlayerController.Instance.players.Find(player => player.IsMe == true);
+            me.OnActivePlayerChanged += IsActivePlayer;
+
+            if (!TcpController.isHost)
+            {
+                menuButton.gameObject.SetActive(false);
+            }
+
             inputBox.onValueChanged.AddListener(InputFieldValueChanged);
 
             if (QuestionController.Instance.GetCurrentQuestion() != null)
             {
                 SetCurrentQuestion(QuestionController.Instance.GetCurrentQuestion());
             }
+
+            menuButton.onClick.AddListener(() => {
+                GameObject go = Instantiate(modalPrefab, mainCanvas.transform);
+                ModalWindow mw = go.GetComponent<ModalWindow>();
+
+                mw.SetText("Are you sure you want to change the Question?");
+                mw.OnAcceptButtonClicked += () => QuestionController.Instance.SetAndBroadcastRandomQuestion();
+
+            });
         }
 
         // Update is called once per frame
@@ -38,17 +60,32 @@ namespace TriviaGame
 
         }
 
+        private void IsActivePlayer(bool value)
+        {
+            
+            if (value)
+            {
+                inputBox.interactable = value;
+                inputBox.ActivateInputField();
+            } else
+            {
+                inputBox.DeactivateInputField(true);
+                inputBox.interactable = value;
+            }
+        }
+
         public void SetCurrentQuestion(Question question)
         {
+            Debug.Log("Instantiating question stuff");
             if (question == null)
             {
                 Debug.LogError("Question is Null");
                 return;
             }
 
-            foreach (UIAnswer uiAnswer in uiAnswerRef)
+            foreach (Transform child in answersBox)
             {
-                Destroy(uiAnswer.gameObject);
+                Destroy(child.gameObject);
             }
 
             uiAnswerRef = new List<UIAnswer>();
@@ -68,13 +105,13 @@ namespace TriviaGame
             questionText.text = question.GetQuestionText();
         }
 
-        public void RevealAnswer(string answer)
+        public void RevealAnswer(TcpController.AnswerStruct answer)
         {
-            Debug.Log("Correct answer: " + answer);
-            uiAnswerRef[0].RevealAnswer(answer);
+            Debug.Log("Correct answer: " + answer.answer);
+            uiAnswerRef[0].RevealAnswer(answer.answer);
             uiAnswerRef.RemoveAt(0);
 
-            //currentQuestion.RemoveAnswer(answer);
+            correctAnswerAudio.Play();
         }
 
         public void InputFieldValueChanged(string value)

@@ -11,8 +11,8 @@ using System.IO;
 namespace TriviaGame { 
     public class TcpController : MonoBehaviour
     {
-        //private const string HOST_ADDR = "ec2-63-33-192-141.eu-west-1.compute.amazonaws.com";
-        private const string HOST_ADDR = "localhost";
+        private const string HOST_ADDR = "ec2-18-200-111-148.eu-west-1.compute.amazonaws.com";
+        //private const string HOST_ADDR = "localhost";
 
         private const string CMD_NAME = "name";
         private const string CMD_QUESTION = "question";
@@ -26,11 +26,12 @@ namespace TriviaGame {
         private TcpClient socketConnection;
         private Thread clientReceiveThread;
 
-        public event Action<string> PlayerJoined;
+        public event Action<Player> PlayerJoined;
         public event Action<string> PlayerLeft;
-        public event Action<string> AnswerReceived;
+        public event Action<AnswerStruct> AnswerReceived;
         public event Action<Question> QuestionReceived;
         public event Action StartGame;
+        public event Action<string> NewActivePlayer;
 
         //  Singleton
         private static TcpController _instance;
@@ -41,8 +42,8 @@ namespace TriviaGame {
                 if (_instance == null)
                 {
                     var go = new GameObject("TcpController");
-                    DontDestroyOnLoad(go);
                     var component = go.AddComponent<TcpController>();
+                    DontDestroyOnLoad(go);
                     _instance = component;
                 }
                 return _instance;
@@ -73,14 +74,7 @@ namespace TriviaGame {
         {
             //ConnectToTcpServer();
         }
-        // Update is called once per frame
-        void Update()
-        {
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                PlayerJoined?.Invoke("Daddo");
-            }
-        }
+
         /// <summary> 	
         /// Setup socket connection. 	
         /// </summary> 	
@@ -96,85 +90,6 @@ namespace TriviaGame {
             catch (Exception e)
             {
                 Debug.Log("On client connect exception " + e);
-            }
-        }
-        /// <summary> 	
-        /// Runs in background clientReceiveThread; Listens for incoming data. 	
-        /// </summary>     
-        private void ListenForDat2a()
-        {
-            try
-            {
-                socketConnection = new TcpClient(HOST_ADDR, PORT);
-                Byte[] bytes = new Byte[1024];
-                while (true)
-                {
-                    // Get a stream object for reading 				
-                    using (NetworkStream stream = socketConnection.GetStream())
-                    {
-                        int length;
-                        // Read incoming stream into byte arrary. 					
-                        while ((length = stream.Read(bytes, 0, bytes.Length)) != 0)
-                        {
-                            var incomingData = new byte[length];
-                            Array.Copy(bytes, 0, incomingData, 0, length);
-                            // Convert byte array to string message. 						
-                            string serverMessage = Encoding.ASCII.GetString(incomingData);
-                            Debug.Log(serverMessage);
-                            Regex rx = new Regex(@"{(.*?)}");
-                            MatchCollection matches = rx.Matches(serverMessage);
-
-                            List<string> jsons = ParseStringToJSONList(serverMessage);
-
-                            foreach (string json in jsons)
-                            {
-                                try
-                                {
-                                    CommandStruct cmdStruct = JsonUtility.FromJson<CommandStruct>(json);
-                                    switch (cmdStruct.cmd)
-                                    {
-                                        case "name":
-                                            //UnityMainThreadDispatcher.Instance.Enqueue(PlayerController.Instance.AddPlayer(cmdStruct.val));
-                                            UnityMainThreadDispatcher.Instance.Enqueue(() => { PlayerJoined?.Invoke(cmdStruct.val);
-                                                Debug.Log("name = " + cmdStruct.val);
-                                            });
-                                            break;
-                                        case "answer":
-                                            UnityMainThreadDispatcher.Instance.Enqueue(() => { AnswerReceived?.Invoke(cmdStruct.val);
-                                                Debug.Log("answer = " + cmdStruct.val);
-                                            });
-                                            break;
-                                        case "question":
-                                            UnityMainThreadDispatcher.Instance.Enqueue(() => {
-                                                Question question = Question.JsonToQuestion(cmdStruct.val);
-                                                QuestionReceived?.Invoke(question);
-                                            });
-                                            break;
-                                        case "playerleft":
-                                            UnityMainThreadDispatcher.Instance.Enqueue(() => { PlayerLeft?.Invoke(cmdStruct.val); });
-                                            Debug.Log("playerleft = " + cmdStruct.val);
-                                            break;
-                                        case "startgame":
-                                            UnityMainThreadDispatcher.Instance.Enqueue(() => { StartGame?.Invoke(); });
-                                            Debug.Log("startgame");
-                                            break;
-                                        default:
-                                            Debug.Log("Unknown command: " + cmdStruct.cmd);
-                                            break;
-                                    }
-                                }
-                                catch (ArgumentException e)
-                                {
-                                    Debug.Log("Argument Exception: " + e);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            catch (SocketException socketException)
-            {
-                Debug.Log("Socket exception: " + socketException);
             }
         }
 
@@ -208,21 +123,25 @@ namespace TriviaGame {
                                 switch (cmdStruct.cmd)
                                 {
                                     case "name":
-                                        //UnityMainThreadDispatcher.Instance.Enqueue(PlayerController.Instance.AddPlayer(cmdStruct.val));
                                         UnityMainThreadDispatcher.Instance.Enqueue(() => {
-                                            PlayerJoined?.Invoke(cmdStruct.val);
-                                            Debug.Log("name = " + cmdStruct.val);
+                                            Debug.Log(cmdStruct.val);
+                                            PlayerStruct pStruct = JsonUtility.FromJson<PlayerStruct>(cmdStruct.val);
+                                            Debug.Log("id = " + pStruct.id + ", name = " + pStruct.name + " , isMe = " + pStruct.isMe);
+                                            Player player = new Player(pStruct.id, pStruct.name, pStruct.isMe);
+                                            PlayerJoined?.Invoke(player);
                                         });
                                         break;
                                     case "answer":
                                         UnityMainThreadDispatcher.Instance.Enqueue(() => {
-                                            AnswerReceived?.Invoke(cmdStruct.val);
-                                            Debug.Log("answer = " + cmdStruct.val);
+                                            AnswerStruct answer = JsonUtility.FromJson<AnswerStruct>(cmdStruct.val);
+                                            AnswerReceived?.Invoke(answer);
+                                            Debug.Log("answer = " + answer.answer);
                                         });
                                         break;
                                     case "question":
                                         UnityMainThreadDispatcher.Instance.Enqueue(() => {
                                             Question question = Question.JsonToQuestion(cmdStruct.val);
+                                            Debug.Log("Question received");
                                             QuestionReceived?.Invoke(question);
                                         });
                                         break;
@@ -233,6 +152,9 @@ namespace TriviaGame {
                                     case "startgame":
                                         UnityMainThreadDispatcher.Instance.Enqueue(() => { StartGame?.Invoke(); });
                                         Debug.Log("startgame");
+                                        break;
+                                    case "activeplayer":
+                                        UnityMainThreadDispatcher.Instance.Enqueue(() => { NewActivePlayer?.Invoke(cmdStruct.val); });
                                         break;
                                     default:
                                         Debug.Log("Unknown command: " + cmdStruct.cmd);
@@ -343,6 +265,21 @@ namespace TriviaGame {
         {
             public string cmd;
             public string val;
+        }
+
+        [Serializable]
+        private struct PlayerStruct
+        {
+            public string id;
+            public string name;
+            public bool isMe;
+        }
+
+        [Serializable]
+        public struct AnswerStruct
+        {
+            public string id;
+            public string answer;
         }
     }
 }

@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-
+using TMPro;
+using System;
 
 namespace TriviaGame
 {
@@ -11,41 +12,55 @@ namespace TriviaGame
         public Button joinButton;
         public Button createButton;
         [Space]
-        public Text nameInput;
-        public Text codeInput;
+        public Text nameText;
+        public Text codeText;
+        [Space]
+        public InputField codeInput;
 
 
         // Start is called before the first frame update
         void Start()
         {
+            TouchScreenKeyboard.hideInput = true;
+
             createButton.onClick.AddListener(CreateGame);
             joinButton.onClick.AddListener(JoinGame);
+
+            codeInput.onValidateInput += (input, charIndex, addedChar) => { return Char.ToUpper(addedChar); };
+        }
+
+        private void ToUppercase(string str)
+        {
+
         }
 
         // Update is called once per frame
         void Update()
         {
-
+            if (codeText.text != codeText.text.ToUpper())
+            {
+                codeText.text = codeText.text.ToUpper();
+            }
         }
 
         private void CreateGame()
         {
-            if (nameInput.text == "")
+            if (nameText.text == "")
             {
                 return;
             }
 
-            RestAPICaller.Instance.CreateGame(nameInput.text);
+            RestAPICaller.Instance.CreateGame(nameText.text);
         }
 
         private void JoinGame()
         {
-            if (nameInput.text == "" || codeInput.text == "")
+            if (nameText.text == "" || codeText.text == "")
             {
                 return;
             }
 
-            RestAPICaller.Instance.JoinGame(nameInput.text, codeInput.text);
+            RestAPICaller.Instance.JoinGame(nameText.text, codeText.text);
         }
     }
 }

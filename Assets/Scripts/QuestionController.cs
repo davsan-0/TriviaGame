@@ -8,11 +8,9 @@ namespace TriviaGame
     public class QuestionController : MonoBehaviour
     {
         public event Action<Question> QuestionSet;
-        public event Action<string> AnswerDiscovered;
+        public event Action<TcpController.AnswerStruct> AnswerDiscovered;
 
         private Question currentQuestion;
-
-        public string questionAsString;
 
         
 
@@ -48,12 +46,14 @@ namespace TriviaGame
             }
 
             TcpController.Instance.QuestionReceived += SetQuestion;
+            Debug.Log("SetQuestion subscribed");
             TcpController.Instance.AnswerReceived += TcpCheckAnswer;
             //uiAnswerRef = new List<UIAnswer>();
         }
 
         private void SetQuestion(Question question)
         {
+            Debug.Log("New Question set");
             currentQuestion = question;
             QuestionSet?.Invoke(currentQuestion);
         }
@@ -84,12 +84,12 @@ namespace TriviaGame
             this.questionAsString = question;
         }*/
 
-        private void TcpCheckAnswer(string answer)
+        private void TcpCheckAnswer(TcpController.AnswerStruct answer)
         {
             CheckAnswer(answer);
         }
 
-        public bool CheckAnswer(string answer)
+        public bool CheckAnswer(TcpController.AnswerStruct answer)
         {
             if (currentQuestion == null)
             {
@@ -97,11 +97,15 @@ namespace TriviaGame
                 return false;
             }
 
-            string correctAnswer = currentQuestion.CheckAnswer(answer);
+            string correctAnswer = currentQuestion.CheckAnswer(answer.answer);
 
             if (correctAnswer != null)
             {
-                AnswerDiscovered?.Invoke(correctAnswer);
+                TcpController.AnswerStruct answerStruct;
+                answerStruct.id = answer.id;
+                answerStruct.answer = correctAnswer;
+                currentQuestion.RemoveAnswer(correctAnswer);
+                AnswerDiscovered?.Invoke(answerStruct);
                 return true;
             }
             return false;
@@ -109,7 +113,11 @@ namespace TriviaGame
 
         public bool CheckAnswerAndBroadcast(string answer)
         {
-            bool correct = CheckAnswer(answer);
+            TcpController.AnswerStruct answerStruct;
+            answerStruct.id = PlayerController.Instance.players.Find(player => player.IsMe == true).Id;
+            answerStruct.answer = answer;
+
+            bool correct = CheckAnswer(answerStruct);
 
             if (correct)
             {

@@ -31,12 +31,20 @@ namespace TriviaGame
             }
 
             PlayerController.Instance.players[0].IsActivePlayer = true;
+            PlayerController.Instance.OnPlayerRemoved += RemovePlayer;
         }
+        
 
-        // Update is called once per frame
-        void Update()
+        private void RemovePlayer(Player player)
         {
-
+            try
+            {
+                Destroy(playersDict[player]);
+                playersDict.Remove(player);
+            } catch (KeyNotFoundException e)
+            {
+                Debug.Log(e);
+            }
         }
     }
 

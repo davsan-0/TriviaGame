@@ -16,7 +16,7 @@ namespace TriviaGame
 
         private string name;
         private Color _color;
-        private int _score;
+        private int _score = 0;
 
         public string Name {
             get
@@ -52,6 +52,7 @@ namespace TriviaGame
             set
             {
                 _score = value;
+                Debug.Log("Score = " + _score);
                 OnScoreChanged?.Invoke(_score);
             }
         }
@@ -69,11 +70,17 @@ namespace TriviaGame
             }
         }
 
+        public bool IsMe { get; private set; } = false;
+
+        public string Id { get; set; }
+
         private bool isActivePlayer;
 
-        public Player(string name)
+        public Player(string id, string name, bool isMe)
         {
+            this.Id = id;
             this.Name = name;
+            this.IsMe = isMe;
         }
     }
 }

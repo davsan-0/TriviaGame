@@ -8,8 +8,6 @@ namespace TriviaGame
     public class PlayerController : MonoBehaviour
     {
 
-        public GameObject playerPrefab;
-
         public List<Player> players;
 
         public Dictionary<string, Player> playersDict;
@@ -54,11 +52,26 @@ namespace TriviaGame
 
             TcpController.Instance.PlayerJoined += AddPlayer;
             TcpController.Instance.PlayerLeft += RemovePlayer;
+            QuestionController.Instance.AnswerDiscovered += AnswerDiscovered;
         }
 
-        public void AddPlayer(string name)
+        public void AnswerDiscovered(TcpController.AnswerStruct answer)
         {
-            Player player = new Player(name);
+            for (int i = 0; i < players.Count; i++)
+            {
+                if (answer.id == players[i].Id)
+                {
+                    players[i].Score++;
+                    players[i].IsActivePlayer = false;
+
+                    players[(i + 1) % players.Count].IsActivePlayer = true;
+                }
+            }
+           
+        }
+
+        public void AddPlayer(Player player)
+        {
             player.Color = playerColors[players.Count];
 
             players.Add(player);
@@ -66,13 +79,19 @@ namespace TriviaGame
             OnPlayerAdded?.Invoke(player);
         }
 
-        public void RemovePlayer(string name)
+        public void RemovePlayer(string id)
         {
-            int index = players.FindIndex(player => player.Name == name);
+            int index = players.FindIndex(player => player.Id == id);
 
             if (index != -1) // -1 is if it doesn't find anything
             {
                 Player toRemove = players[index];
+                if (toRemove.IsActivePlayer)
+                {
+                    toRemove.IsActivePlayer = false;
+                    players[(index + 1) % players.Count].IsActivePlayer = true;
+                }
+
                 players.RemoveAt(index);
                 OnPlayerRemoved?.Invoke(toRemove);
             }

@@ -9,8 +9,8 @@ namespace TriviaGame
 {
     public class RestAPICaller : MonoBehaviour
     {
-        //const string URI = "http://ec2-63-33-192-141.eu-west-1.compute.amazonaws.com";
-        const string URI = "http://localhost:3000";
+        const string URI = "http://ec2-18-200-111-148.eu-west-1.compute.amazonaws.com";
+        //const string URI = "http://localhost:3000";
         const string GET_QUESTION = "/questions";
         const string CREATE_GAME = "/host";
         const string JOIN_GAME = "/join";
