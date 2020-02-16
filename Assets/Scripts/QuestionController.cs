@@ -111,10 +111,27 @@ namespace TriviaGame
             return false;
         }
 
+        public void RevealAllAnswers()
+        {
+            for (int i = currentQuestion.answerList.Count - 1; i >= 0; i--)
+            {
+                Answer answer = currentQuestion.answerList[i];
+                TcpController.AnswerStruct answerStruct = new TcpController.AnswerStruct { id = "", answer = answer.answerPermutations[0] };
+                currentQuestion.answerList.RemoveAt(i);
+                AnswerDiscovered?.Invoke(answerStruct);
+            }
+        }
+
+        public void RevealAllAnswersAndBroadcast()
+        {
+            TcpController.Instance.SendRevealAllAnswers();
+            RevealAllAnswers();
+        }
+
         public bool CheckAnswerAndBroadcast(string answer)
         {
             TcpController.AnswerStruct answerStruct;
-            answerStruct.id = PlayerController.Instance.players.Find(player => player.IsMe == true).Id;
+            answerStruct.id = PlayerController.Instance.allPlayers.Find(player => player.IsMe == true).Id;
             answerStruct.answer = answer;
 
             bool correct = CheckAnswer(answerStruct);

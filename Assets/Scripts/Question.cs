@@ -24,7 +24,7 @@ namespace TriviaGame
     {
         public string id { get; set; }
 
-        public Category category { get; set; }
+        public string category { get; set; }
 
         public string questionText { get; set; }
 
@@ -216,7 +216,7 @@ namespace TriviaGame
             Debug.Log("id = " + qStruct.id);
             question.questionText = qStruct.questionText;
             Debug.Log("qT = " + qStruct.questionText);
-            question.category = (Category)Enum.Parse(typeof(Category), qStruct.category);
+            question.category = qStruct.category;
             Debug.Log("cat = " + qStruct.category);
             question.SetAnswersFromString(qStruct.answerList);
             Debug.Log("answers = " + qStruct.answerList);

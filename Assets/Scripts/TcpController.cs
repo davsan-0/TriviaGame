@@ -18,6 +18,8 @@ namespace TriviaGame {
         private const string CMD_QUESTION = "question";
         private const string CMD_ANSWER = "answer";
         private const string CMD_STARTGAME = "startgame";
+        private const string CMD_REVEALALL = "revealall";
+        private const string CMD_SKIP = "skip";
 
         public static int PORT;
         public static string ROOM_CODE;
@@ -32,6 +34,7 @@ namespace TriviaGame {
         public event Action<Question> QuestionReceived;
         public event Action StartGame;
         public event Action<string> NewActivePlayer;
+        public event Action<Player> PlayerSkipped;
 
         //  Singleton
         private static TcpController _instance;
@@ -156,6 +159,15 @@ namespace TriviaGame {
                                     case "activeplayer":
                                         UnityMainThreadDispatcher.Instance.Enqueue(() => { NewActivePlayer?.Invoke(cmdStruct.val); });
                                         break;
+                                    case "revealall":
+                                        UnityMainThreadDispatcher.Instance.Enqueue(() => { QuestionController.Instance.RevealAllAnswers(); });
+                                        break;
+                                    case "skip":
+                                        UnityMainThreadDispatcher.Instance.Enqueue(() => {
+                                            Player skipPlayer = PlayerController.Instance.allPlayers.Find(player => player.Id == cmdStruct.val);
+                                            PlayerSkipped?.Invoke(skipPlayer);
+                                        });
+                                        break;
                                     default:
                                         Debug.Log("Unknown command: " + cmdStruct.cmd);
                                         break;
@@ -196,7 +208,7 @@ namespace TriviaGame {
                     byte[] clientMessageAsByteArray = Encoding.ASCII.GetBytes(clientMessage);
                     // Write byte array to socketConnection stream.                 
                     stream.Write(clientMessageAsByteArray, 0, clientMessageAsByteArray.Length);
-                    Debug.Log("Client sent his message - should be received by server");
+                    Debug.Log("Send message: " + clientMessage);
                 }
             }
             catch (SocketException socketException)
@@ -258,6 +270,16 @@ namespace TriviaGame {
         public void SendAnswer(string answer)
         {
             SendCommand(CMD_ANSWER, answer);
+        }
+
+        public void SendRevealAllAnswers()
+        {
+            SendCommand(CMD_REVEALALL, "");
+        }
+
+        public void SendSkip()
+        {
+            SendCommand(CMD_SKIP, "");
         }
 
         [Serializable]

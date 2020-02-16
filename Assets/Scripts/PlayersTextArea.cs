@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 namespace TriviaGame
 {
@@ -15,7 +16,7 @@ namespace TriviaGame
         {
             playersDict = new Dictionary<Player, GameObject>();
 
-            foreach (Player player in PlayerController.Instance.players)
+            foreach (Player player in PlayerController.Instance.allPlayers)
             {
                 GameObject go = Instantiate(playerPrefab);
                 PlayerMain pm = go.GetComponent<PlayerMain>();
@@ -30,8 +31,21 @@ namespace TriviaGame
                 playersDict.Add(player, go);
             }
 
-            PlayerController.Instance.players[0].IsActivePlayer = true;
+            PlayerController.Instance.allPlayers[0].IsActivePlayer = true;
             PlayerController.Instance.OnPlayerRemoved += RemovePlayer;
+
+            QuestionController.Instance.QuestionSet += (question) =>
+            {
+                foreach (KeyValuePair<Player, GameObject> item in playersDict)
+                {
+                    item.Value.GetComponentInChildren<TextMeshProUGUI>().fontStyle = FontStyles.SmallCaps;
+                }
+            };
+
+            TcpController.Instance.PlayerSkipped += (player) =>
+            {
+                playersDict[player].GetComponentInChildren<TextMeshProUGUI>().fontStyle = FontStyles.Strikethrough | FontStyles.SmallCaps;
+            };
         }
         
 

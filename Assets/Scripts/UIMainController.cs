@@ -13,29 +13,32 @@ namespace TriviaGame
         public GameObject answerPrefab;
         public Transform answersBox;
         public AudioSource correctAnswerAudio;
-        public Button menuButton;
+       
         public Canvas mainCanvas;
 
         [Space]
         public GameObject modalPrefab;
 
-        private List<UIAnswer> uiAnswerRef;
+        [Space]
+        [Header("Bottom Buttons")]
+        public Button menuButton;
+        public Button revealAnswersButton;
+        public Button skipButton;
+
+        private List<NewAnswer> uiAnswerRef;
 
         // Start is called before the first frame update
         void Start()
         {
-            uiAnswerRef = new List<UIAnswer>();
+            uiAnswerRef = new List<NewAnswer>();
 
             QuestionController.Instance.AnswerDiscovered += RevealAnswer;
             QuestionController.Instance.QuestionSet += SetCurrentQuestion;
 
-            Player me = PlayerController.Instance.players.Find(player => player.IsMe == true);
+            Player me = PlayerController.Instance.allPlayers.Find(player => player.IsMe == true);
             me.OnActivePlayerChanged += IsActivePlayer;
 
-            if (!TcpController.isHost)
-            {
-                menuButton.gameObject.SetActive(false);
-            }
+            
 
             inputBox.onValueChanged.AddListener(InputFieldValueChanged);
 
@@ -48,10 +51,43 @@ namespace TriviaGame
                 GameObject go = Instantiate(modalPrefab, mainCanvas.transform);
                 ModalWindow mw = go.GetComponent<ModalWindow>();
 
-                mw.SetText("Are you sure you want to change the Question?");
+                mw.SetText("Do you want to change the question?");
                 mw.OnAcceptButtonClicked += () => QuestionController.Instance.SetAndBroadcastRandomQuestion();
 
             });
+
+            revealAnswersButton.onClick.AddListener(() => {
+                GameObject go = Instantiate(modalPrefab, mainCanvas.transform);
+                ModalWindow mw = go.GetComponent<ModalWindow>();
+
+                mw.SetText("Do you want to reveal all answers?");
+                mw.OnAcceptButtonClicked += () => QuestionController.Instance.RevealAllAnswersAndBroadcast();
+            });
+
+            if (!TcpController.isHost)
+            {
+                menuButton.gameObject.SetActive(false);
+                revealAnswersButton.gameObject.SetActive(false);
+            }
+
+            skipButton.onClick.AddListener(() =>
+            {
+                GameObject go = Instantiate(modalPrefab, mainCanvas.transform);
+                ModalWindow mw = go.GetComponent<ModalWindow>();
+
+                mw.SetText("Do you want to surrender?");
+                mw.OnAcceptButtonClicked += () => TcpController.Instance.SendSkip();
+            });
+
+            PlayerController.Instance.allPlayers.Find(player => player.IsMe).OnActivePlayerChanged += (isActive) =>
+            {
+                skipButton.interactable = isActive;
+
+                if (isActive)
+                {
+                    Handheld.Vibrate();
+                }
+            };
         }
 
         // Update is called once per frame
@@ -88,12 +124,14 @@ namespace TriviaGame
                 Destroy(child.gameObject);
             }
 
-            uiAnswerRef = new List<UIAnswer>();
+            uiAnswerRef = new List<NewAnswer>();
             Debug.Log("qText = " + question.GetQuestionText());
             for (int i = 0; i < question.TotalAnswersCount(); i++)
             {
                 GameObject go = Instantiate(answerPrefab, answersBox);
-                uiAnswerRef.Add(go.GetComponent<UIAnswer>()); // Add reference to the created ui object
+                NewAnswer na = go.GetComponent<NewAnswer>();
+                na.SetNumber(i + 1);
+                uiAnswerRef.Add(na); // Add reference to the created ui object
             }
 
             /*foreach (string answer in question.EnteredAnswersList)

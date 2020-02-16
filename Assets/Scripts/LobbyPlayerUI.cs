@@ -39,7 +39,7 @@ namespace TriviaGame
 
         private void StartGameClicked()
         {
-            RestAPICaller.Instance.GetQuestion(10, (List<Question> questions) =>
+            RestAPICaller.Instance.GetQuestion(100, (List<Question> questions) =>
             {
                 SceneManager.LoadScene("MainScene", LoadSceneMode.Single);
                 TcpController.Instance.SendStartGame();

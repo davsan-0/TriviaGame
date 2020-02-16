@@ -97,7 +97,7 @@ namespace TriviaGame
                 TcpController.Instance.ConnectToTcpServer(codeStruct.port);
                 TcpController.ROOM_CODE = codeStruct.code;
 
-                PlayerController.Instance.players = new List<Player>();
+                PlayerController.Instance.activePlayers = new List<Player>();
 
                 TcpController.isHost = true;
 
